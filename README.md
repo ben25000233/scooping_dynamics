@@ -23,10 +23,10 @@ tool_type : spoon, knife, stir, fork
 ```
 ## Run
 ```
-for data_collection
+for data_collection:
 make run
 
-for train dynamics
+for train dynamics:
 cd dynamics/multimodal/multimodal
 python mini_main.py --config configs/training_default.yaml
 ```
