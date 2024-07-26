@@ -23,26 +23,12 @@ tool_type : spoon, knife, stir, fork
 ```
 ## Run
 ```
-#for spacemouse controller license 
-sudo chmod 0666 /dev/hidraw*
-python scoop.py
+for data_collection
+make run
+
+for train dynamics
+cd dynamics/multimodal/multimodal
+python mini_main.py --config configs/training_default.yaml
 ```
 
-## Franka Control
-```
-KEY_UP, "up")
-KEY_DOWN, "down")
-KEY_LEFT, "left")
-KEY_RIGHT, "right")
-KEY_W, "backward")
-KEY_S, "forward")
-KEY_A, "turn_right")
-KEY_D, "turn_left")
-KEY_E, "turn_up")
-KEY_Q, "scoop up")
-KEY_E, "scoop down")
-KEY_SPACE, "gripper_close")
-KEY_X, "save")
-KEY_B, "quit")
-```
 
