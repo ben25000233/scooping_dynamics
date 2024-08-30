@@ -24,7 +24,8 @@ tool_type : spoon, knife, stir, fork
 ## Run
 ```
 for data_collection:
-make run
+single run : python data_collection.py
+multi : make run
 
 for train dynamics:
 cd dynamics/multimodal/multimodal
