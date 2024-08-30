@@ -1,6 +1,6 @@
 
 # Number of times to run the script
-NUM_RUNS=3000
+NUM_RUNS=300
 
 # Target to run the script multiple times
 run:
