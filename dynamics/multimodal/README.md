@@ -1,4 +1,5 @@
-# robotic-powder-weighting
+# grain dynamic
+
 
 ## Getting started
 
@@ -10,7 +11,6 @@
 Please set in config file
 ```
 
-```
 ## Run
 ```
 python mini_main.py --config configs/training_default.yaml
