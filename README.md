@@ -1,4 +1,4 @@
-# robotic-powder-weighting
+# GRITS
 
 ## Getting started
 
