@@ -13,7 +13,7 @@ Please set in config file
 
 ## Run
 ```
-python mini_main.py --config configs/training_default.yaml
+python mini_main.py --config configs/training_default.yaml --type {spillage/scoop}
 ```
 
 
