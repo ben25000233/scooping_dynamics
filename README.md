@@ -29,7 +29,7 @@ multi : make run
 
 for train dynamics:
 cd dynamics/multimodal/multimodal
-python mini_main.py --config configs/training_default.yaml
+python mini_main.py --config configs/training_default.yaml --type (test/spillage/scoop)
 ```
 
 
