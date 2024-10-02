@@ -37,13 +37,13 @@ class IsaacSim():
 
         self.count = int(self.config['count'])
 
-        if not os.path.exists("./dynamics/collected_data/dataset"):
-            os.makedirs("./dynamics/collected_data/dataset")
+        if not os.path.exists("./dynamics/collected_dataset_with_pcd/dataset"):
+            os.makedirs("./dynamics/collected_dataset_with_pcd/dataset")
 
         
 
         # Update self.file_root with the new count
-        self.file_root = f"./dynamics/collected_data/dataset_info/time_{self.count}"
+        self.file_root = f"./dynamics/collected_dataset_with_pcd/dataset_info/time_{self.count}"
         if not os.path.exists(f"{self.file_root}"):
             os.makedirs(f"{self.file_root}")
 
@@ -82,6 +82,7 @@ class IsaacSim():
 
         # Look at the first env
         cam_target = gymapi.Vec3(0.5, -0.18, 0.3)
+        # self.cam_pos = gymapi.Vec3(0.5, 0.1, 0.2)
         self.gym.viewer_camera_look_at(self.viewer, None, self.cam_pos, cam_target)
         
 
@@ -125,7 +126,7 @@ class IsaacSim():
         args.use_gpu_pipeline = False
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         # self.device = 'cpu'
-        self.num_envs = 5
+        self.num_envs = 1
         # configure sim
         sim_params = gymapi.SimParams()
         sim_params.up_axis = gymapi.UP_AXIS_Z
@@ -183,12 +184,12 @@ class IsaacSim():
         asset_options.fix_base_link = True
         self.bowl_asset = self.gym.load_asset(self.sim, self.asset_root, file_name, asset_options)
 
-        # file_name = 'bowl/transparant_bowl.urdf'
-        # asset_options = gymapi.AssetOptions()
-        # asset_options.armature = 0.01
-        # asset_options.vhacd_enabled = True
-        # asset_options.fix_base_link = True
-        # self.transparent_bowl_asset = self.gym.load_asset(self.sim, self.asset_root, file_name, asset_options)
+        file_name = 'bowl/transparent_bowl.urdf'
+        asset_options = gymapi.AssetOptions()
+        asset_options.armature = 0.01
+        asset_options.vhacd_enabled = True
+        asset_options.fix_base_link = True
+        self.transparent_bowl_asset = self.gym.load_asset(self.sim, self.asset_root, file_name, asset_options)
 
     def create_franka(self):
         # create franka asset
@@ -267,14 +268,20 @@ class IsaacSim():
     def create_ball(self):
         self.ball_radius = round(random.uniform(0.003, 0.008), 4)
         self.ball_mass = round(random.uniform(0.0001, 0.0025), 4)
-
-        # big balls
-        big = random.randint(0, 10)
-        if big == 3:
-            self.ball_radius *= 2
-            self.ball_mass *= 8
-
         self.ball_friction = round(random.uniform(0, 0.2),2)
+        
+        # big balls
+        # big = random.randint(0, 10)
+        # if big == 3:
+        #     self.ball_radius *= 2
+        #     self.ball_mass *= 8
+
+        
+
+        self.ball_radius = 0.004
+        self.ball_mass = 0.001
+        self.ball_friction = 0.1
+
 
         max_num = int(32/pow(2, (self.ball_radius - 0.003)*1000))+3
         self.ball_amount = random.randint(1, max_num)
@@ -321,9 +328,9 @@ class IsaacSim():
         ran = 8
     
         while ball_amount > 0:
-            y = -0.2
+            y = -0.18
             for j in range(ran):
-                x = 0.49
+                x = 0.47
                 for k in range(ran):
                     ball_pose.p = gymapi.Vec3(x, y, z)
                     ball_handle = self.set_ball_property(ball_pose)
@@ -333,6 +340,7 @@ class IsaacSim():
             z += self.ball_radius*2
             ball_amount -= 1
 
+ 
 
     
     def _create_envs(self, num_envs, spacing, num_per_row):
@@ -410,7 +418,7 @@ class IsaacSim():
             # #add bowl_2
             # bowl_pose = gymapi.Transform()
             # bowl_pose.r = gymapi.Quat(0, 0, 0, 1)
-            # bowl_pose.p = gymapi.Vec3(0.7, -0.5 , self.default_height/2)   
+            # bowl_pose.p = gymapi.Vec3(0.5, 0.1 , 0.1)   
             # self.bowl_2 = self.gym.create_actor(self.env_ptr, self.transparent_bowl_asset, bowl_pose, "bowl_2", 0, 0)
 
             # body_shape_prop = self.gym.get_actor_rigid_shape_properties(self.env_ptr, self.bowl)
@@ -488,6 +496,16 @@ class IsaacSim():
                                     gymapi.FOLLOW_TRANSFORM)
             self.camera_handles[i].append(camera_2)
 
+            #add camera_3
+            camera_3 = self.gym.create_camera_sensor(self.env_ptr, self.camera_props)
+            camera_transform = gymapi.Transform()
+    
+            cam_pos = gymapi.Vec3(0.5, 0.15, 0.2)
+            cam_target = gymapi.Vec3(0.5, -0.18, 0.323)
+            self.gym.set_camera_location(camera_3, self.env_ptr, cam_pos, cam_target)
+      
+            self.camera_handles[i].append(camera_3)
+
 
         self.franka_actor_indices = to_torch(self.franka_indices, dtype = torch.int32, device = "cpu")
 
@@ -546,14 +564,14 @@ class IsaacSim():
 
     def define_scale(self, amount, type = None):
         
-        spillage_range = [0, 1000, 3000, 5000]
+        spillage_range = [0, 3000]
 
         # < 500 : strongly scoop more
         # 500-2000 : weakly scoop more
         # 2000 - 4000 : well done
         # 4000 - 6000 : weakly scoop less
         # > 6000 : strongly scoop less
-        scoop_range = [0, 500, 2000, 4000, 6000]
+        scoop_range = [0, 5, 4000, 6000]
 
         if amount == 0:
             index = 0
@@ -684,14 +702,14 @@ class IsaacSim():
     def reset_franka(self, franka_idx, init = 0):
 
         # temp = np.load("./sym01/joint_states.npy")
-        # franka_init_pose = np.append(temp[80], 0.02)
+        # franka_init_pose = np.append(temp[0], 0.02)
    
         franka_init_pose = np.append(self.down_trial[0], 0.02)
-        
         franka_init_pose = np.append(franka_init_pose, 0.02)
         # franka_init_pose = np.array([0 ,0 , 0 ,-2, 0  ,2, 0.8 , 0.02  ,  0.02 ])
         
         franka_init_pose = torch.tensor(franka_init_pose, dtype=torch.float32)
+
        
         if init == 1:
             self.dof_state[:, self.franka_dof_index, 0] = franka_init_pose
@@ -719,7 +737,7 @@ class IsaacSim():
 
     def data_collection(self):
 
-        self.collect_time = 3
+        self.collect_time = 1
         self.round = [0]*self.num_envs
         self.pos_action = torch.zeros((self.num_envs, 9), dtype=torch.float32)
         self.slow_time = 6
@@ -811,6 +829,7 @@ class IsaacSim():
                 
                 top_pcd_point = self.list_to_nparray(self.top_pcd_point_list)
                 top_pcd_color = self.list_to_nparray(self.top_pcd_color_list)
+                
 
 
                 # top_rgb = self.list_to_nparray(self.top_rgb_list)
@@ -833,7 +852,6 @@ class IsaacSim():
                 spillage_type = self.list_to_nparray(self.spillage_type)
                 scoop_type = self.list_to_nparray(self.scooped_type)
 
- 
                 data_dict = {
                     
                     'eepose' : eepose,
@@ -846,22 +864,18 @@ class IsaacSim():
                     'scoop_type': scoop_type,
 
                     'top_pcd_point' : top_pcd_point,
-                    # 'top_pcd_color' : top_pcd_color,
                     'top_depth' : top_depth,
-                    # 'top_rgb' : top_rgb,
-                    'top_seg' : top_seg,
+                    'front_seg' : top_seg,
 
                     'hand_depth' : hand_depth,
                     'hand_seg' : hand_seg,
                     'hand_pcd_point' : hand_pcd_point,
-                    # 'hand_pcd_color' : hand_pcd_color,
-                    # 'hand_rgb' : hand_rgb,
                 }
 
      
 
                 # store the data
-                with h5py.File(f'{f"./dynamics/collected_data/dataset/time_{self.count}"}.h5', 'w') as h5file:
+                with h5py.File(f'{f"./dynamics/collected_dataset_with_pcd/dataset/time_{self.count}"}.h5', 'w') as h5file:
                     for key, value in data_dict.items():
                         h5file.create_dataset(key, data=value)
 
@@ -919,70 +933,72 @@ class IsaacSim():
             self.record_ee_pose[env_index].append(ee_pose_arr)
             
             #get top_image
+
+            top_color_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][0],  gymapi.IMAGE_COLOR)
+            top_color_image = top_color_image.reshape(self.camera_props.height, self.camera_props.width, 4)
+            # self.top_rgb_list[env_index].append(top_color_image)
             
             top_depth_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][0],  gymapi.IMAGE_DEPTH)
             top_seg_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][0],  gymapi.IMAGE_SEGMENTATION)
-            nor_top_depth = self.normalize_image(top_depth_image, "top")
-            self.top_depth_list[env_index].append(nor_top_depth)
-            self.top_seg_list[env_index].append(top_seg_image[30:135, 45:165])
+            nor_top_depth = self.normalize_image(top_depth_image[30:135, 50:165])
+            top_pcd = self.depth_to_point_cloud(env_index, nor_top_depth,top_seg_image[30:135, 50:165], type = 0)
 
-            # plt.imshow(top_seg_image[30:135, 45:165])
+            self.top_pcd_point_list[env_index].append(np.array(top_pcd.points))
+            self.top_depth_list[env_index].append(nor_top_depth)
+            self.top_seg_list[env_index].append(top_seg_image[30:135, 50:165].reshape(105*115, 1))
+
+            
+            # plt.imshow(top_seg_image[30:135, 50:165])
             # plt.show()
 
-
-            # top_color_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][0],  gymapi.IMAGE_COLOR)
-            # top_color_image = top_color_image.reshape(self.camera_props.height, self.camera_props.width, 4)
-            # self.top_rgb_list[env_index].append(top_color_image)
             
-            # top_pcd = self.depth_to_point_cloud(env_index, nor_top_depth,top_seg_image, type = 0)
-            # self.top_pcd_point_list[env_index].append(np.array(top_pcd.points))
-            # self.top_pcd_color_list[env_index].append(np.array(top_pcd.colors))
+      
 
             #get hand_image
 
-            hand_depth_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][1],  gymapi.IMAGE_DEPTH)
-            hand_seg_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][1],  gymapi.IMAGE_SEGMENTATION)
-            nor_hand_depth = self.normalize_image(hand_depth_image, "hand")
-            self.hand_depth_list[env_index].append(nor_hand_depth)
-            self.hand_seg_list[env_index].append(hand_seg_image[25:150,35:150])
-            # plt.imshow(hand_seg_image[25:150,35:150])
-            # plt.show()
-            # hand_color_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][1],  gymapi.IMAGE_COLOR)
-            # hand_color_image = hand_color_image.reshape(self.camera_props.height, self.camera_props.width, 4)
+            hand_color_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][1],  gymapi.IMAGE_COLOR)
+            hand_color_image = hand_color_image.reshape(self.camera_props.height, self.camera_props.width, 4)
             # self.hand_rgb_list[env_index].append(hand_color_image)
 
-            
-            # hand_pcd = self.depth_to_point_cloud(env_index, nor_hand_depth, hand_seg_image, type = 1)
-            # self.hand_pcd_point_list[env_index].append(np.array(hand_pcd.points))
-            # self.hand_pcd_color_list[env_index].append(np.array(hand_pcd.colors))
-            
-            # img = self.normalize_image(top_depth_image, "top")
-            # plt.imshow(top_color_image[50:130, 45:175])
+
+            hand_depth_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][1],  gymapi.IMAGE_DEPTH)
+            hand_seg_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][1],  gymapi.IMAGE_SEGMENTATION)
+            nor_hand_depth = self.normalize_image(hand_depth_image[25:130,35:150])
+            hand_pcd = self.depth_to_point_cloud(env_index, nor_hand_depth, hand_seg_image[25:130,35:150], type = 1)
+       
+
+            self.hand_pcd_point_list[env_index].append(np.array(hand_pcd.points))
+            self.hand_depth_list[env_index].append(nor_hand_depth)
+            self.hand_seg_list[env_index].append(hand_seg_image[25:130,35:150].reshape(105*115, 1))
+
+            #get tool image
+
+            tool_color_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][2],  gymapi.IMAGE_COLOR)
+            tool_color_image = tool_color_image.reshape(self.camera_props.height, self.camera_props.width, 4)
+            tool_depth_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][2],  gymapi.IMAGE_DEPTH)
+            tool_seg_image = self.gym.get_camera_image(self.sim, self.envs[env_index], self.camera_handles[env_index][2],  gymapi.IMAGE_SEGMENTATION)
+            # nor_tool_depth = self.normalize_image(tool_depth_image)
+            # self.tool_pcd = self.depth_to_point_cloud(env_index, tool_depth_image, tool_seg_image, type = 2)
+
+            # plt.imshow(tool_seg_image)
             # plt.show()
  
-            # # plt.savefig('sim_seg.png')
             
 
-    def normalize_image(self, img, type):
+    def normalize_image(self, img):
 
-        if type == "hand" :
-            image = img[25:130,35:150]
-        elif type == "top" : 
-            image = img[30:135, 50:165]
-        min_val = np.min(image)
-        max_val = np.max(image)
+        min_val = np.min(img)
+        max_val = np.max(img)
 
         # Normalize the image to 0-1 range
-        normalized_img = (image - min_val) / (max_val - min_val)
+        normalized_img = (img - min_val) / (max_val - min_val)
         normalized_img = 1- normalized_img
 
-        # plt.imshow(normalized_img)
-        # plt.show()
         
         return normalized_img
 
     def depth_to_point_cloud(self, env_index, depth_image, seg_image, type = 0):
-  
+
         color_map = {
             0: [1, 0, 0],    # Red
             1: [0, 1, 0],    # Green
@@ -991,21 +1007,24 @@ class IsaacSim():
             4: [1, 0, 1]     # Magenta
         }
 
-    
+        init_spoon_pcd = np.load("temp.npy")
         points = []
         colors = []
+
+ 
         vinv = np.linalg.inv(np.matrix(self.gym.get_camera_view_matrix(self.sim, self.envs[env_index], self.camera_handles[env_index][type])))
 
         proj = self.gym.get_camera_proj_matrix(self.sim, self.envs[env_index], self.camera_handles[env_index][type])
         fu = 2/proj[0, 0]
         fv = 2/proj[1, 1]
 
-        height, width = depth_image.shape
+        height, width = seg_image.shape
         
         centerU = int(width/2)
         centerV = int(height/2)
-        for i in range(width):
-            for j in range(height):
+
+        for j in range(height):
+            for i in range(width):
                 # if depth_image[j, i] > -0.3:
                 u = -(i-centerU)/(width)  # image-space coordinate
                 v = (j-centerV)/(height)  # image-space coordinate
@@ -1013,23 +1032,40 @@ class IsaacSim():
                 X2 = [d*fu*u, d*fv*v, d, 1]  # deprojection vector
                 p2 = X2*vinv  # Inverse camera view to get world coordinates
                 points.append([p2[0, 2], p2[0, 0], p2[0, 1]])
-                # colors.append(color_map[seg_image[j][i]])
-                    
+                colors.append(color_map[seg_image[j][i]])
+
         points_np = np.array(points)
-        # colors_np = np.array(colors)
+        colors_np = np.array(colors)
+
+        a, b = seg_image.shape
+        seg_image = np.transpose(seg_image)
+        seg_image = seg_image.reshape(a, b, 1)
+      
+        points = np.array(points).reshape(a, b, 3)
+
+        filter_tool = np.array([points[j, i] for j in range(height) for i in range(width) if int(seg_image[j, i]) == 1])
+        filter_ball = np.array([points[j, i] for j in range(height) for i in range(width) if int(seg_image[j, i]) == 2])
+        filter_points = np.concatenate((filter_tool, init_spoon_pcd), axis=0)
+        
+  
+        # total_point = np.concatenate((filter_point, init_spoon_pcd), axis=0)
 
         # Create an Open3D PointCloud object
         point_cloud = o3d.geometry.PointCloud()
 
         # Assign points to the point cloud
         point_cloud.points = o3d.utility.Vector3dVector(points_np)
-        # point_cloud.colors = o3d.utility.Vector3dVector(colors_np)
+        point_cloud.colors = o3d.utility.Vector3dVector(colors_np)
         # print(len(point_cloud.points))
 
         # remaining_cloud = self.align_point_cloud(point_cloud)
          
 
         # o3d.visualization.draw_geometries([point_cloud])
+        # exit()
+     
+    
+        
 
         return point_cloud
     
@@ -1045,6 +1081,7 @@ class IsaacSim():
             new_pcd = pcd.select_by_index(indices)
     
         return new_pcd
+    
         
     
 
