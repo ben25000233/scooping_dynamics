@@ -1,0 +1,56 @@
+training_type: "selfsupervised"
+log_level: 'INFO'
+
+test: False
+
+# Ablations
+encoder: True
+deterministic: True
+vision: 1.0
+depth: 1.0
+proprio: 1.0
+force: 1.0
+sceneflow: 1.0
+opticalflow: 1.0
+contact: 1.0
+pairing: 1.0
+eedelta: 1.0
+
+spillage: 1.0
+top_pcd: 1.0
+hand_pcd: 1.0
+property_in: 1.0
+eepose: 1.0
+
+
+# Training parameters
+lr: 0.0001
+beta1: 0.9 
+seed: 1234
+max_epoch: 100
+batch_size: 256
+ep_length: 50
+zdim: 128
+action_dim: 4
+
+# Dataset params
+dataset_params:
+  force_name: "force"
+  action_dim: 4
+
+load : False
+model_path: "./../../ckpt/epoch29.pt"
+# logging_folder: logging/
+
+num_envs : 5
+collect_time : 3
+n_time_steps : 10
+
+
+# path to dataset hdf5 file'
+# dataset: "dataset/test_data/"
+dataset: "../../test_dataset/dataset/"
+
+val_ratio: 0.20
+cuda: True
+num_workers: 20

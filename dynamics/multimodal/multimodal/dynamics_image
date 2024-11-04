@@ -1,0 +1,35 @@
+# Start from the CUDA base image
+FROM nvidia/cuda:11.7.1-devel-ubuntu20.04
+
+# Set environment variables to avoid interactive prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.7, basic dependencies, and required libraries
+
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.7 python3.7-distutils python3.7-dev python3-pip libx11-6 libgl1-mesa-glx libglib2.0-0 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1 && \
+    ln -s /usr/bin/python3.7 /usr/bin/python && \
+    rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install required Python libraries
+RUN python3.7 -m pip install --upgrade pip && \
+    pip install argparse pyyaml numpy tqdm open3d h5py
+
+
+# Install specific versions of PyTorch, torchvision, and torchaudio
+RUN pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1+cu117 -f https://download.pytorch.org/whl/torch_stable.html
+
+
+
+# Set up a working directory
+WORKDIR /workspace
+
+# Default command
+CMD ["bash"]
+
+
+

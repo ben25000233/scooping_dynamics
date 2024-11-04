@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<robot name="bowl_2">
+  <link name="bowl_2">
+    <visual>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="s_bowl.obj"/>
+      </geometry>
+    </visual>
+    
+  </link>
+</robot>
+        

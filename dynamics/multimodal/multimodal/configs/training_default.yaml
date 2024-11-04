@@ -1,0 +1,56 @@
+training_type: "selfsupervised"
+log_level: 'INFO'
+
+test: False
+
+# Ablations
+encoder: True
+deterministic: True
+vision: 1.0
+depth: 1.0
+proprio: 1.0
+force: 1.0
+sceneflow: 1.0
+opticalflow: 1.0
+contact: 1.0
+pairing: 1.0
+eedelta: 1.0
+
+spillage: 1.0
+top_pcd: 1.0
+hand_pcd: 1.0
+property_in: 1.0
+eepose: 1.0
+
+
+# Training parameters
+lr: 0.001
+beta1: 0.9
+seed: 1234
+max_epoch: 500
+batch_size: 64
+ep_length: 50
+zdim: 128
+action_dim: 4s
+
+# Dataset params
+dataset_params:
+  force_name: "force"
+  action_dim: 4
+
+load : True
+model_path: "./../../spillage_ckpt/epoch149.pt"
+# logging_folder: logging/
+
+num_envs : 5
+collect_time : 3
+n_time_steps : 10
+
+
+# path to dataset hdf5 file'
+dataset: "/media/hcis-s22/data/new_dataset/dataset/"
+# dataset: "test_dataset/"
+
+val_ratio: 0.2
+cuda: True
+num_workers: 20

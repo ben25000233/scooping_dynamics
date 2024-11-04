@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<robot name="bowl">
+  <link name="bowl">
+    <visual>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="table.obj" scale="100 100 1"/>
+      </geometry>
+    </visual>
+    <!-- <collision>
+      <geometry>
+        <mesh filename="table.obj"/>
+      </geometry>
+    </collision> -->
+  </link>
+</robot>
+        

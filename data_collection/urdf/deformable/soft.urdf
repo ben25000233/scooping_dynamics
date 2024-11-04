@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<robot name="isosphere">
+	<link name="soft">
+		<fem>
+			<origin rpy="0.0 0.0 0.0" xyz="0 0 0"/>
+			<density value="1e4"/>
+			<youngs value="1e10"/>
+			<poissons value="0"/>
+			<damping value="0"/>
+			<tetmesh filename="icosphere.tet"/>
+			<scale value="0.007"/>
+		</fem>
+	</link> 
+</robot>

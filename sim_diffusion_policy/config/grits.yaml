@@ -1,0 +1,54 @@
+defaults:
+  - task: food_scoop
+
+trial_name: "model_ee_LambdaLR_add10"
+img_type: "rgbd"
+multi_img: False
+proprioception: True
+guidance: True
+
+data:
+  rootPath: 'dataset'
+  food_item: ['brl', 'brm', 'brh', 
+              'cb', 
+              'col', 'com', 'coh', 
+              'jul', 'jum', 'juh', 
+              'mbl', 'mbm', 'mbh', 
+              'syl', 'sym', 'syh']
+  trial_num: 5
+
+train_dataloader:
+  batch_size: 64
+  num_workers: 8
+
+val_dataloader:
+  batch_size: 1
+  num_workers: 8
+
+test_dataloader:
+  batch_size: 1
+  num_workers: 8
+
+horizon: 16
+n_obs_steps: 5
+n_action_steps: 8
+num_train_timesteps: 100
+num_inference_steps: 16
+
+training:
+  device: "cuda:0"
+  num_epochs: 1000
+  gradient_accumulate_every: 1
+  lr: 0.0001
+  lr_warmup_steps: 500
+  num_cycles: 1
+  save_epoch: 50 
+
+testing:
+  device: "cuda:0"
+  guided_weight: 50.
+  goal_guided_mode: "sum_all_frame_weighted"
+  spillage_guided_mode: "mean"
+  alpha: 1.0 # goal constraint
+  beta: 0.8  # spillage constraint
+  gamma: 0.2 # amount constraint
